@@ -23,7 +23,24 @@ const makeRandomMove = async roomId => {
     const winner = room.getWinner();
     if (winner) {
         room.endGame(winner);
-        sendWinner(room._id.toString(), winner);
+        const winPlayer = room.players.find(player => player.color === winner);
+        sendWinner(room._id.toString(), winPlayer);
+        // sendWinner(room._id.toString(), winner);
+        const axios = require('axios');
+        // const lastPlayer = room.players.find(player => player.color === winner);
+        eventRoomName = room.name;
+        eventType = "etat_fin";
+        eventPlayerName = winPlayer.name;
+        try {
+            const response = await axios.post(`${room.mainUrlApi}/api/update-room-info/`, {
+                eventRoomName,
+                eventType,
+                eventPlayerName
+            });
+            console.log(`Django API response: ${response.data.message}`);
+        } catch (error) {
+            console.error('Error sending room info to Django:', error.message);
+        }
     }
     await updateRoom(room);
 };

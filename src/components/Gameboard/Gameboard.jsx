@@ -25,15 +25,30 @@ const Gameboard = () => {
     const [winner, setWinner] = useState(null);
 
     useEffect(() => {
+
+        //socket.emit('session:get');
+        /*socket.on('session:data', (data) => {
+            console.log('Données de session reçues depuis le backend :', data);
+        });*/
+
+        console.log('Contexte joueur:', context.playerId);
+        console.log('Événement room:data émis avec roomId:', context.roomId);
+        console.log('socket session avant roomhandler : ', socket)
         socket.emit('room:data', context.roomId);
         socket.on('room:data', data => {
+            console.log('Données reçues dans room:data:', data);
             data = JSON.parse(data);
-            if (data.players == null) return;
-            // Filling navbar with empty player nick container
+    
+            if (!data || data.players == null || data.pawns == null) {
+                console.warn('Données invalides reçues:', data);
+                return;
+            }
+    
+            // Remplir la barre de navigation avec des joueurs fictifs si nécessaire
             while (data.players.length !== 4) {
                 data.players.push({ name: '...' });
             }
-            // Checks if client is currently moving player by session ID
+    
             const nowMovingPlayer = data.players.find(player => player.nowMoving === true);
             if (nowMovingPlayer) {
                 if (nowMovingPlayer._id === context.playerId) {
@@ -43,24 +58,34 @@ const Gameboard = () => {
                 }
                 setMovingPlayer(nowMovingPlayer.color);
             }
+    
             const currentPlayer = data.players.find(player => player._id === context.playerId);
-            setIsReady(currentPlayer.ready);
+            if (currentPlayer) {
+                setIsReady(currentPlayer.ready);
+            } else {
+                console.warn('Joueur actuel introuvable:', context.playerId);
+            }
+    
             setRolledNumber(data.rolledNumber);
             setPlayers(data.players);
             setPawns(data.pawns);
             setTime(data.nextMoveTime);
             setStarted(data.started);
         });
-
+    
         socket.on('game:winner', winner => {
+            winner = JSON.parse(winner);
+            console.log('Gagnant reçu:', winner);
             setWinner(winner);
         });
+    
         socket.on('redirect', () => {
+            console.log('Redirection reçue, rechargement de la page.');
             window.location.reload();
         });
 
-    }, [socket, context.playerId, context.roomId, setRolledNumber]);
-
+    }, [socket, context, context.playerId, context.roomId, setRolledNumber]);
+    
     return (
         <>
             {pawns.length === 16 ? (
@@ -78,19 +103,21 @@ const Gameboard = () => {
                     <Map pawns={pawns} nowMoving={nowMoving} rolledNumber={rolledNumber} />
                 </div>
             ) : (
-                <ReactLoading type='spinningBubbles' color='white' height={667} width={375} />
+                <>
+                    <ReactLoading type='spinningBubbles' color='white' height={667} width={375} />
+                </>
             )}
             {winner ? (
                 <Overlay>
                     <div className={styles.winnerContainer}>
                         <img src={trophyImage} alt='winner' />
                         <h1>
-                            1st: <span style={{ color: winner }}>{winner}</span>
-                        </h1>
-                        <button onClick={() => socket.emit('player:exit')}>Play again</button>
-                    </div>
-                </Overlay>
-            ) : null}
+                            Vainqueur : <span style={{ color: winner.color, backgroundColor:"white" }}>{winner.name}</span>
+                            </h1>
+                            <button style={{display:'none'}} onClick={() => socket.emit('player:exit')}>Play again</button>
+                        </div>
+                    </Overlay>
+                ) : null}
         </>
     );
 };

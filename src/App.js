@@ -4,24 +4,75 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import ReactLoading from 'react-loading';
 import Gameboard from './components/Gameboard/Gameboard';
 import LoginPage from './components/LoginPage/LoginPage';
+import axios from 'axios';
 
 export const PlayerDataContext = createContext();
 export const SocketContext = createContext();
 
 function App() {
     const [playerData, setPlayerData] = useState();
-    const [playerSocket, setPlayerSocket] = useState();
-    const [redirect, setRedirect] = useState();
+    const [playerSocket, setPlayerSocket] = useState(null);
+    const [redirect, setRedirect] = useState(false);
+
+    const autoIntegratePlayer = async socketID => {
+        try {
+            console.log('Tentative d’intégration automatique du joueur...');
+            
+            /*const savedPlayer = JSON.parse(localStorage.getItem('playerData'));
+            if (savedPlayer) {
+                console.log('Joueur trouvé dans localStorage:', savedPlayer);
+                setPlayerData(savedPlayer);
+                setRedirect(true);
+                return;
+            }*/
+
+            // Récupère les paramètres d'URL pour associer un nouveau joueur
+            const params = new URLSearchParams(window.location.search);
+            const roomName = params.get('roomName');
+            const roomMainUrlAPI = params.get('roomMainUrlAPI');
+            const roomPlaces = params.get('roomPlaces');
+            const playerName = params.get('playerName');
+            const sessionID = params.get('sessionID');
+
+            if (!roomName || !roomMainUrlAPI || !roomPlaces || !playerName || !sessionID) {
+                console.warn('Paramètres manquants dans l’URL.');
+                return;
+            }
+
+            // Appel API pour intégrer automatiquement le joueur
+            const response = await axios.post('http://localhost:8080/api/rooms/auto-join', {
+                roomName,
+                roomMainUrlAPI,
+                roomPlaces,
+                playerName,
+                sessionID,
+                socketID, // Envoi le socket ID
+            });
+
+            console.log('Réponse API:', response.data);
+
+            const player = response.data.player;
+            setPlayerData(response.data);
+            localStorage.setItem('playerData', JSON.stringify(player));
+            setRedirect(true);
+        } catch (error) {
+            console.error('Erreur lors de l’intégration automatique du joueur:', error);
+        }
+    };
+
     useEffect(() => {
         const socket = io(`http://${window.location.hostname}:8080`, { withCredentials: true });
-        socket.on('player:data', data => {
-            data = JSON.parse(data);
-            setPlayerData(data);
-            if (data.roomId != null) {
-                setRedirect(true);
-            }
+
+        socket.on('connect', () => {
+            console.log('Socket connecté avec ID:', socket.id);
+            autoIntegratePlayer(socket.id); // Appelle l'intégration avec le socket ID
         });
+
         setPlayerSocket(socket);
+
+        return () => {
+            socket.disconnect();
+        };
     }, []);
 
     return (
@@ -35,7 +86,8 @@ function App() {
                             if (redirect) {
                                 return <Navigate to='/game' />;
                             } else if (playerSocket) {
-                                return <LoginPage />;
+                                return <ReactLoading type='spinningBubbles' color='white' height={667} width={375} />;
+                                // return <LoginPage />;
                             } else {
                                 return <ReactLoading type='spinningBubbles' color='white' height={667} width={375} />;
                             }
@@ -63,7 +115,8 @@ function App() {
                                     </PlayerDataContext.Provider>
                                 );
                             } else {
-                                return <Navigate to='/login' />;
+                                return <ReactLoading type='spinningBubbles' color='white' height={667} width={375} />;
+                                // return <Navigate to='/login' />;
                             }
                         }}
                     ></Route>

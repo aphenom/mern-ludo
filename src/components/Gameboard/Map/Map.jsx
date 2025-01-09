@@ -92,7 +92,9 @@ const Map = ({ pawns, nowMoving, rolledNumber }) => {
             height={460}
             ref={canvasRef}
             onClick={handleCanvasClick}
+            onTouchStart={handleCanvasClick}
             onMouseMove={handleMouseMove}
+            onTouchMove={handleMouseMove}
         />
     );
 };

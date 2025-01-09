@@ -10,4 +10,23 @@
     color: white;
     font-weight: bold;
     text-align: center;
+    font-size: 11px;
+}
+
+
+@media (max-width: 480px) {
+    .container {
+        position: relative;
+        min-width: 80px;
+        min-height: 32px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 2px solid white;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        font-size: 10px;
+    }
 }

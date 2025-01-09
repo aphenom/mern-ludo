@@ -39,4 +39,7 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
+const roomsRoute = require('./routes/rooms');
+app.use('/api/rooms', roomsRoute);
+
 module.exports = { server };

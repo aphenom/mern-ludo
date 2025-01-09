@@ -19,7 +19,20 @@ const getJoinableRoom = async () => {
 
 const createNewRoom = async data => {
     const room = new Room(data);
+    console.log('Room créée avec pions :', room.pawns);
     await room.save();
+    return room;
+};
+
+const getOrCreateRoomByName = async roomName => {
+    let room = await Room.findOne({ name: roomName }).exec();
+    if (!room) {
+        room = new Room({ name: roomName });
+        await room.save();
+        console.log('Nouvelle room créée:', room);
+    } else {
+        console.log('Room existante trouvée:', room);
+    }
     return room;
 };
 
@@ -27,4 +40,4 @@ Room.watch().on('change', async data => {
     sendToPlayersData(await getRoom(data.documentKey._id));
 });
 
-module.exports = { getRoom, getRooms, updateRoom, getJoinableRoom, createNewRoom };
+module.exports = { getRoom, getRooms, updateRoom, getJoinableRoom, createNewRoom, getOrCreateRoomByName };

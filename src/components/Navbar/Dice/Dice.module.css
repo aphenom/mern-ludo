@@ -9,3 +9,12 @@
     height: 100%;
     cursor: pointer;
 }
+
+@media (max-width: 480px) {
+    .container {
+        margin-left: 5px;
+        margin-right: 5px;
+        width: 32px;
+        height: 32px;
+    }
+}

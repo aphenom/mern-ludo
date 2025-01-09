@@ -17,7 +17,8 @@ const sendToOnePlayerRooms = (id, rooms) => {
 };
 
 const sendWinner = (id, winner) => {
-    socketManager.getIO().to(id).emit('game:winner', winner);
+    socketManager.getIO().to(id).emit('game:winner', JSON.stringify(winner));
+    // socketManager.getIO().to(id).emit('game:winner', winner);
 };
 
 module.exports = {

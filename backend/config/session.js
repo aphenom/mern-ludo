@@ -7,14 +7,14 @@ const store = new MongoDBStore({
 });
 const sessionMiddleware = session({
     store: store,
-    credentials: true,
+    //credentials: true,
     cookie: {
         httpOnly: false,
         secure: false,
     },
     secret: 'secret',
-    saveUninitialized: true,
-    resave: true,
+    saveUninitialized: false,
+    resave: false,
     maxAge: 20000,
 });
 

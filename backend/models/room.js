@@ -7,6 +7,7 @@ const PlayerSchema = require('./player');
 
 const RoomSchema = new mongoose.Schema({
     name: String,
+    mainUrlApi: String,
     private: { type: Boolean, default: false },
     password: String,
     createDate: { type: Date, default: Date.now },
@@ -14,6 +15,7 @@ const RoomSchema = new mongoose.Schema({
     full: { type: Boolean, default: false },
     nextMoveTime: Number,
     rolledNumber: Number,
+    places: Number,
     players: [PlayerSchema],
     winner: { type: String, default: null },
     pawns: {
@@ -82,14 +84,22 @@ RoomSchema.methods.canStartGame = function () {
 };
 
 RoomSchema.methods.startGame = function () {
+    console.log('Démarrage de la partie pour la room :', this.name);
+
     this.started = true;
     this.nextMoveTime = Date.now() + MOVE_TIME;
-    this.players.forEach(player => (player.ready = true));
-    this.players[0].nowMoving = true;
+
+    this.players.forEach(player => {
+        player.ready = true;
+    });
+
+    //this.players[0].nowMoving = true;
+
     timeoutManager.set(makeRandomMove, MOVE_TIME, this._id.toString());
 };
 
 RoomSchema.methods.endGame = function (winner) {
+    console.log("Fin de la partie");
     timeoutManager.clear(this._id.toString());
     this.rolledNumber = null;
     this.nextMoveTime = null;
@@ -115,7 +125,7 @@ RoomSchema.methods.getWinner = function () {
 };
 
 RoomSchema.methods.isFull = function () {
-    if (this.players.length === 4) {
+    if (this.players.length === 4 || this.players.length === this.places) {
         this.full = true;
     }
     return this.full;
@@ -125,6 +135,7 @@ RoomSchema.methods.getPlayer = function (playerId) {
     return this.players.find(player => player._id.toString() === playerId.toString());
 };
 
+/*
 RoomSchema.methods.addPlayer = function (name, id) {
     if (this.full) return;
     this.players.push({
@@ -134,6 +145,64 @@ RoomSchema.methods.addPlayer = function (name, id) {
         color: COLORS[this.players.length],
     });
 };
+*/
+RoomSchema.methods.addPlayer = function (name, sessionID) {
+    console.log('Tentative d’ajout du joueur avec sessionID :', sessionID);
+
+    const existingPlayer = this.players.find(player => player.sessionID === sessionID);
+    if (existingPlayer) {
+        console.log('Joueur déjà existant dans la room :', existingPlayer);
+        return existingPlayer;
+    }
+
+    if (this.full) {
+        console.warn('La room est pleine.');
+        return null;
+    }
+
+    const newPlayer = {
+        sessionID: sessionID,
+        name: name,
+        ready: false,
+        color: COLORS[this.players.length],
+    };
+
+    this.players.push(newPlayer);
+
+    const lastPlayer = this.players.find(player => player.sessionID === sessionID);
+
+
+    if (this.players.length === 4 || this.players.length === this.places) {
+        this.full = true;
+        lastPlayer.nowMoving = true; // désignant comme debutant
+        this.players.forEach(player => {
+            player.ready = true;
+        });
+        this.started = true;
+    }
+
+    console.log('Nouveau joueur ajouté :', lastPlayer);
+    return lastPlayer;
+};
+
+RoomSchema.methods.removePlayer = function (sessionID) {
+    const playerIndex = this.players.findIndex(player => player.sessionID === sessionID);
+    if (playerIndex !== -1) {
+        const removedPlayer = this.players.splice(playerIndex, 1)[0];
+        if (this.players.length < 4 || this.players.length < this.places) {
+            this.full = false; // Met à jour le statut de la room
+        }
+        // reattribution de couleur et position
+        let i = 0;
+        this.players.forEach(player => {
+            player.color = COLORS[i]
+            i++;
+        });
+        return removedPlayer;
+    }
+    return null;
+};
+
 
 RoomSchema.methods.getPawnIndex = function (pawnId) {
     return this.pawns.findIndex(pawn => pawn._id.toString() === pawnId.toString());
