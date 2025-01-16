@@ -1,5 +1,5 @@
 module.exports = function (mongoose) {
-    const connectionUri = process.env.CONNECTION_URI;
+    const connectionUri = process.env.MONGO_URI;
 
     if (!connectionUri) {
         console.error('CONNECTION_URI is not defined. Please set it in your .env file.');
