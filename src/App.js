@@ -40,7 +40,7 @@ function App() {
             }
 
             // Appel API pour intégrer automatiquement le joueur
-            const response = await axios.post('http://localhost:8080/api/rooms/auto-join', {
+            const response = await axios.post('http://localhost:8088/api/rooms/auto-join', {
                 roomName,
                 roomMainUrlAPI,
                 roomPlaces,
@@ -61,7 +61,7 @@ function App() {
     };
 
     useEffect(() => {
-        const socket = io(`http://${window.location.hostname}:8080`, { withCredentials: true });
+        const socket = io(`http://${window.location.hostname}:8088`, { withCredentials: true });
 
         socket.on('connect', () => {
             console.log('Socket connecté avec ID:', socket.id);
