@@ -61,13 +61,15 @@ function App() {
     };
 
     useEffect(() => {
-        let port = location.port;
+        let port = window.location.port;
+        let url = null;
         if(!port){
-            const socket = io(`http://${window.location.hostname}`, { withCredentials: true });
+            url = `http://${window.location.hostname}`;
         }
         else{
-            const socket = io(`http://${window.location.hostname}:8088`, { withCredentials: true });
+            url = `http://${window.location.hostname}:8088`;
         }
+        const socket = io(`${url}`, { withCredentials: true });
 
         socket.on('connect', () => {
             console.log('Socket connecté avec ID:', socket.id);
