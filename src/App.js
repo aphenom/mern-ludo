@@ -61,7 +61,8 @@ function App() {
     };
 
     useEffect(() => {
-        const socket = io(`http://${window.location.hostname}:8088`, { withCredentials: true });
+        const socket = io(`http://localhost:8088`, { withCredentials: true });
+        //const socket = io(`http://${window.location.hostname}:8088`, { withCredentials: true });
 
         socket.on('connect', () => {
             console.log('Socket connecté avec ID:', socket.id);
