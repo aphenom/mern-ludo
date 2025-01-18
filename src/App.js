@@ -39,8 +39,17 @@ function App() {
                 return;
             }
 
+            let port = window.location.port;
+            let url = null;
+            if(!port){
+                url = `http://${window.location.hostname}`;
+            }
+            else{
+                url = `http://${window.location.hostname}:8088`;
+            }
+
             // Appel API pour intégrer automatiquement le joueur
-            const response = await axios.post('http://localhost:8088/api/rooms/auto-join', {
+            const response = await axios.post(`${url}/api/rooms/auto-join`, {
                 roomName,
                 roomMainUrlAPI,
                 roomPlaces,
