@@ -14,7 +14,7 @@ function App() {
     const [playerSocket, setPlayerSocket] = useState(null);
     const [redirect, setRedirect] = useState(false);
 
-    const autoIntegratePlayer = async socketID => {
+    const autoIntegratePlayer = async (socketID, url) => {
         try {
             console.log('Tentative d’intégration automatique du joueur...');
             
@@ -37,15 +37,6 @@ function App() {
             if (!roomName || !roomMainUrlAPI || !roomPlaces || !playerName || !sessionID) {
                 console.warn('Paramètres manquants dans l’URL.');
                 return;
-            }
-
-            let port = window.location.port;
-            let url = null;
-            if(!port){
-                url = `http://${window.location.hostname}`;
-            }
-            else{
-                url = `http://${window.location.hostname}:8088`;
             }
 
             // Appel API pour intégrer automatiquement le joueur
@@ -82,7 +73,7 @@ function App() {
 
         socket.on('connect', () => {
             console.log('Socket connecté avec ID:', socket.id);
-            autoIntegratePlayer(socket.id); // Appelle l'intégration avec le socket ID
+            autoIntegratePlayer(socket.id, url); // Appelle l'intégration avec le socket ID
         });
 
         setPlayerSocket(socket);
