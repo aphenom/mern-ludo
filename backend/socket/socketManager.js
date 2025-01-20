@@ -4,9 +4,14 @@ const util = require('util');
 const socketManager = {
     io: null,
     initialize(server) {
+        const corsOrigin =
+            process.env.NODE_ENV === 'production'
+                ? 'https://gameplay.ludo-round.com' // Production
+                : 'http://localhost:3000';         // Développement
+
         this.io = require('socket.io')(server, {
             cors: {
-                origin: 'http://localhost:3000',
+                origin: corsOrigin,
                 credentials: true,
             },
             allowRequest: (req, callback) => {
@@ -19,9 +24,9 @@ const socketManager = {
                     },
                     writeHead() {},
                 };
-            
+
                 console.log('Avant middleware de session - Requête:', util.inspect(req.session, { depth: null }));
-            
+
                 sessionMiddleware(req, fakeRes, () => {
                     if (req.session) {
                         fakeRes.writeHead();
@@ -37,6 +42,8 @@ const socketManager = {
                 });
             },
         });
+
+        console.log(`Socket.io configuré avec CORS Origin: ${corsOrigin}`);
     },
     getIO() {
         if (!this.io) {
