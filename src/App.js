@@ -64,7 +64,7 @@ function App() {
         let port = window.location.port;
         let url = null;
         if(!port){
-            url = `http://${window.location.hostname}`;
+            url = `https://${window.location.hostname}`;
         }
         else{
             url = `http://${window.location.hostname}:8088`;
