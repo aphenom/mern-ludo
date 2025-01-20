@@ -30,11 +30,10 @@ app.use(
 // Détermine les paramètres CORS en fonction de l'environnement
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production'
-        ? `http://127.0.0.1:${PORT}` // Adresse en production
+        ? `https://gameplay.ludo-round.com` // Adresse en production
         : 'http://localhost:3000',         // Adresse en développement
     credentials: true,
 };
-console.log(`corsOptions : ${corsOptions}`);
 
 // Applique les paramètres CORS
 app.use(cors(corsOptions));
@@ -44,6 +43,8 @@ app.use(sessionMiddleware);
 const server = app.listen(PORT, '127.0.0.1', () => {
     console.log(`Server running on http://127.0.0.1:${PORT}`);
 });
+
+console.log(`corsOptions : ${corsOptions.origin}`);
 
 require('./config/database')(mongoose);
 require('./config/socket')(server);
