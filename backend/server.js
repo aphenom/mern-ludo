@@ -18,12 +18,27 @@ app.use(
 );
 app.use(express.json());
 app.set('trust proxy', 1);
+/*
 app.use(
     cors({
         origin: 'http://localhost:3000',
         credentials: true,
     })
 );
+*/
+
+// Détermine les paramètres CORS en fonction de l'environnement
+const corsOptions = {
+    origin: process.env.NODE_ENV === 'production'
+        ? `http://127.0.0.1:${PORT}` // Adresse en production
+        : 'http://localhost:3000',         // Adresse en développement
+    credentials: true,
+};
+console.log(`corsOptions : ${corsOptions}`);
+
+// Applique les paramètres CORS
+app.use(cors(corsOptions));
+
 app.use(sessionMiddleware);
 
 const server = app.listen(PORT, '127.0.0.1', () => {
