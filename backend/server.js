@@ -26,7 +26,9 @@ app.use(
 );
 app.use(sessionMiddleware);
 
-const server = app.listen(PORT);
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on http://0.0.0.0:${PORT}`);
+});
 
 require('./config/database')(mongoose);
 require('./config/socket')(server);
