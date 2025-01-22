@@ -7,13 +7,26 @@ module.exports = socket => {
 
     const handleMovePawn = async pawnId => {
         const room = await getRoom(req.session.roomId);
-        if (room.winner) return;
+        if (!room || room.winner) return;
+    
+        // Vérifie si un dé a été lancé avant tout déplacement
+        if (room.rolledNumber === null) {
+            console.warn(`Invalid move: Player ${req.session.playerId} attempted to move without rolling the die.`);
+            return;
+        }
+    
         const pawn = room.getPawn(pawnId);
         if (isMoveValid(req.session, pawn, room)) {
             const newPositionOfMovedPawn = pawn.getPositionAfterMove(room.rolledNumber);
             room.changePositionOfPawn(pawn, newPositionOfMovedPawn);
             room.beatPawns(newPositionOfMovedPawn, req.session.color);
+    
+            // Réinitialise le dé après un mouvement valide
+            room.rolledNumber = null;
+    
+            // Change le joueur actif uniquement après un mouvement valide
             room.changeMovingPlayer();
+    
             const winner = room.getWinner();
             if (winner) {
                 room.endGame(winner);
@@ -37,8 +50,11 @@ module.exports = socket => {
                 }
             }
             await updateRoom(room);
+        } else {
+            console.warn(`Invalid move detected for player ${req.session.playerId} and pawn ${pawnId}.`);
         }
     };
+    
 
     const handleRollDice = async () => {
         const rolledNumber = rollDice();
