@@ -5,8 +5,8 @@ import styles from './NameContainer.module.css';
 
 const NameContainer = ({ player, time }) => {
     return (
-        <div className={styles.container} style={{ backgroundColor: player.ready ? player.color : 'lightgrey' }}>
-            <p>{player.name}</p>
+        <div className={styles.container} style={{ backgroundColor: player.ready && player.name ? player.color : 'lightgrey' }}>
+            <p>{ player.name ? player.name : '...' }</p>
             {player.nowMoving ? <AnimatedOverlay time={time} /> : null}
         </div>
     );

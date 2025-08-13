@@ -54,7 +54,13 @@ RoomSchema.methods.changeMovingPlayer = function () {
     if (playerIndex + 1 === this.players.length) {
         this.players[0].nowMoving = true;
     } else {
-        this.players[playerIndex + 1].nowMoving = true;
+        // this.players[playerIndex + 1].nowMoving = true;
+        if(typeof this.players[playerIndex + 1].name === 'undefined'){
+            this.players[playerIndex + 2].nowMoving = true;
+        }
+        else{
+            this.players[playerIndex + 1].nowMoving = true;
+        }
     }
     this.nextMoveTime = Date.now() + MOVE_TIME;
     this.rolledNumber = null;
@@ -169,10 +175,21 @@ RoomSchema.methods.addPlayer = function (name, sessionID) {
 
     this.players.push(newPlayer);
 
+    // on va mettre un joueur virtuel au milieu pour separer les opposant
+    if(this.places === 2 && this.players.length === 1){
+        const newPlayerTampon = {
+            //sessionID: sessionID+"-tmp",
+            ready: false,
+            color: COLORS[this.players.length],
+        };
+    
+        this.players.push(newPlayerTampon);
+    }
+
     const lastPlayer = this.players.find(player => player.sessionID === sessionID);
 
 
-    if (this.players.length === 4 || this.players.length === this.places) {
+    if (this.players.length === 4 || (this.players.length === this.places && this.places > 2) || (this.places === 2 && this.players.length === 3)) {
         this.full = true;
         lastPlayer.nowMoving = true; // désignant comme debutant
         this.players.forEach(player => {
@@ -189,6 +206,12 @@ RoomSchema.methods.removePlayer = function (sessionID) {
     const playerIndex = this.players.findIndex(player => player.sessionID === sessionID);
     if (playerIndex !== -1) {
         const removedPlayer = this.players.splice(playerIndex, 1)[0];
+        
+        // ici au cas où il s'agit d'un 1 contre 1 il faut immédiatement supprimé le joueur virtuel créé pour séparer les joueurs 
+        if(this.places === 2){
+            this.players.splice(playerIndex, 1);
+        }
+        
         if (this.players.length < 4 || this.players.length < this.places) {
             this.full = false; // Met à jour le statut de la room
         }
