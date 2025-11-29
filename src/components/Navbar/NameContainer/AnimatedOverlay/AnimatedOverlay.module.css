@@ -5,6 +5,6 @@
     top: 0;
     left: 0;
     opacity: 0.9;
-    animation: timerAnimation 60s linear infinite;
-    transition-duration: 60s;
+    animation: timerAnimation 30s linear infinite;
+    transition-duration: 30s;
 }
